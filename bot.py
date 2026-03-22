@@ -90,7 +90,9 @@ async def tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def run_scheduler():
     send_message("✅ 봇 정상 작동 확인!")
-    schedule.every().day.at("21:00").do(send_tomorrow_schedule)
+   
+schedule.every(1).minutes.do(send_tomorrow_schedule)
+ 
 
     while True:
         schedule.run_pending()
@@ -111,4 +113,4 @@ app.add_handler(CommandHandler("tomorrow", tomorrow))
 
 print("봇 실행 중...")
 
-app.run_polling()
+app.run_polling() 
