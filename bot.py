@@ -8,6 +8,9 @@ import os
 TOKEN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
+print("TOKEN:", TOKEN)
+print("CHAT_ID:", CHAT_ID)
+
 # 스케줄 데이터 (3월 + 4월)
 schedule_data = {
     3: {
