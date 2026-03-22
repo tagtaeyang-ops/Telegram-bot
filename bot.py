@@ -3,8 +3,10 @@ import schedule
 import time
 from datetime import datetime, timedelta
 
-TOKEN = "8702671060:AAEF8GUd3Bbg8N7DTflbIeaPtr8yM6LYPxQ"
-CHAT_ID = "8114734081"
+import os
+
+TOKEN = os.getenv("8702671060:AAEF8GUd3Bbg8N7DTflbIeaPtr8yM6LYPxQ")
+CHAT_ID = os.getenv("8114734081")
 
 schedule_data = {
     3: {
