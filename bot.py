@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 import os
 
-TOKEN = os.getenv("8702671060:AAEF8GUd3Bbg8N7DTflbIeaPtr8yM6LYPxQ")
-CHAT_ID = os.getenv("8114734081")
+TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
 schedule_data = {
     3: {
