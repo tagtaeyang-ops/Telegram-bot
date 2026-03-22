@@ -1,33 +1,119 @@
+import requests
+import schedule
+import time
+from datetime import datetime, timedelta
 import os
+import threading
+
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from datetime import datetime, timedelta
 
+# 환경변수
 TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
-# 👉 테스트용 데이터
-schedule = {
-    "2026-04-03": "수영장: 박준수(A), 정상진(S)\n안내: 박수정(E)",
-    "2026-04-04": "수영장: 탁태양(C)\n안내: 박선영(A)"
+print("TOKEN:", TOKEN)
+print("CHAT_ID:", CHAT_ID)
+
+# 👉 스케줄 데이터
+schedule_data = {
+    3: {
+        1:"A", 2:"A", 3:"/", 4:"S", 5:"A", 6:"A", 7:"B",
+        8:"A", 9:"/", 10:"/", 11:"A", 12:"A", 13:"A", 14:"A",
+        15:"/", 16:"S", 17:"C", 18:"A", 19:"#", 20:"#", 21:"D",
+        22:"S", 23:"A", 24:"/", 25:"/", 26:"S", 27:"S", 28:"B",
+        29:"/", 30:"/", 31:"/"
+    },
+    4: {
+        1:"C", 2:"A", 3:"#", 4:"S", 5:"D", 6:"C", 7:"A",
+        8:"/", 9:"/", 10:"D", 11:"D", 12:"B", 13:"A", 14:"A",
+        15:"/", 16:"S", 17:"S", 18:"B", 19:"#", 20:"S", 21:"S",
+        22:"/", 23:"/", 24:"D", 25:"B", 26:"A", 27:"/",
+        28:"S", 29:"/", 30:"/"
+    }
 }
 
-# /오늘
+# 📤 메시지 보내기
+def send_message(text):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    requests.post(url, data={
+        "chat_id": CHAT_ID,
+        "text": text
+    })
+
+# 📅 특정 날짜 근무 가져오기
+def get_work(month, day):
+    return schedule_data.get(month, {}).get(day, "정보없음")
+
+# 📆 메시지 포맷
+def make_msg(month, day, work, title):
+    if work == "/":
+        return f"📅 {title}({month}/{day})\n👉 휴무 😎"
+    elif work == "#":
+        return f"📅 {title}({month}/{day})\n👉 특수 일정(#)"
+    else:
+        return f"📅 {title}({month}/{day})\n👉 근무: {work}"
+
+# 🔔 내일 자동 알림
+def send_tomorrow_schedule():
+    tomorrow = datetime.now() + timedelta(days=1)
+    month = tomorrow.month
+    day = tomorrow.day
+
+    work = get_work(month, day)
+    msg = make_msg(month, day, work, "내일")
+
+    send_message(msg)
+
+# =========================
+# 🤖 텔레그램 명령어 부분
+# =========================
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🤖 근무 봇\n\n"
+        "/today - 오늘 근무\n"
+        "/tomorrow - 내일 근무"
+    )
+
 async def today(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    today_date = datetime.now().strftime("%Y-%m-%d")
-    text = schedule.get(today_date, "오늘 스케줄 없음")
-    await update.message.reply_text(f"📅 오늘\n{text}")
+    now = datetime.now()
+    work = get_work(now.month, now.day)
+    msg = make_msg(now.month, now.day, work, "오늘")
+    await update.message.reply_text(msg)
 
-# /내일
 async def tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    tomorrow_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    text = schedule.get(tomorrow_date, "내일 스케줄 없음")
-    await update.message.reply_text(f"📅 내일\n{text}")
+    tomorrow = datetime.now() + timedelta(days=1)
+    work = get_work(tomorrow.month, tomorrow.day)
+    msg = make_msg(tomorrow.month, tomorrow.day, work, "내일")
+    await update.message.reply_text(msg)
 
-app = ApplicationBuilder().token(TOKEN).build()
+# =========================
+# 🚀 봇 실행
+# =========================
 
-app.add_handler(CommandHandler("today", today))
-app.add_handler(CommandHandler("tomorrow", tomorrow))
+def run_bot():
+    app = ApplicationBuilder().token(TOKEN).build()
 
-print("봇 실행 중...")
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("today", today))
+    app.add_handler(CommandHandler("tomorrow", tomorrow))
 
-app.run_polling()
+    print("봇 실행 중...")
+    app.run_polling()
+
+# =========================
+# ⏰ 자동 스케줄 실행
+# =========================
+
+def run_scheduler():
+    send_message("✅ 봇 정상 작동 확인!")
+    schedule.every().day.at("21:00").do(send_tomorrow_schedule)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+# 👉 동시에 실행 (중요)
+threading.Thread(target=run_bot).start()
+threading.Thread(target=run_scheduler).start()
