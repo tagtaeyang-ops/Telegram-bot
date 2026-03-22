@@ -51,3 +51,5 @@ schedule.every().day.at("21:00").do(send_tomorrow_schedule)
 while True:
     schedule.run_pending()
     time.sleep(1)
+
+send_tomorrow_schedule()
