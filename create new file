@@ -1,0 +1,43 @@
+plain text
+bot.py
+
+import requests
+import schedule
+import time
+from datetime import datetime, timedelta
+
+TOKEN = "8702671060:AAEF8GUd3Bbg8N7DTflbIeaPtr8yM6LYPxQ"
+CHAT_ID = "8114734081"
+
+schedule_data = {
+    1:"C", 2:"A", 3:"#", 4:"S", 5:"D", 6:"C", 7:"A",
+    8:"/", 9:"/", 10:"D", 11:"D", 12:"B", 13:"A", 14:"A",
+    15:"/", 16:"S", 17:"S", 18:"B", 19:"#", 20:"S", 21:"S",
+    22:"/", 23:"/", 24:"D", 25:"B", 26:"A", 27:"/",
+    28:"S", 29:"/", 30:"/"
+}
+
+def send_tomorrow_schedule():
+    tomorrow = datetime.now() + timedelta(days=1)
+    day = tomorrow.day
+    work = schedule_data.get(day, "정보없음")
+
+    if work == "/":
+        msg = f"📅 내일({day}일)은 휴무입니다 😎"
+    elif work == "#":
+        msg = f"📅 내일({day}일)은 특수 일정(#)입니다"
+    else:
+        msg = f"📅 내일({day}일) 근무: {work}"
+
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    data = {
+        "chat_id": CHAT_ID,
+        "text": msg
+    }
+    requests.post(url, data=data)
+
+schedule.every().day.at("21:00").do(send_tomorrow_schedule)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
