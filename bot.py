@@ -54,4 +54,12 @@ while True:
     schedule.run_pending()
     time.sleep(1)
 
+
+def send_message(text):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    requests.post(url, data={
+        "chat_id": CHAT_ID,
+        "text": text
+    })
+
 send_message("봇 정상 작동 확인!")
