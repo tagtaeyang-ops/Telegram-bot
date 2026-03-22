@@ -54,4 +54,4 @@ while True:
     schedule.run_pending()
     time.sleep(1)
 
-send_tomorrow_schedule()
+send_message("봇 정상 작동 확인!")
