@@ -41,11 +41,11 @@ def send_message(text):
         "text": text
     })
 
-# 📅 특정 날짜 근무 가져오기
+# 📅 근무 가져오기
 def get_work(month, day):
     return schedule_data.get(month, {}).get(day, "정보없음")
 
-# 📆 메시지 포맷
+# 📆 메시지 만들기
 def make_msg(month, day, work, title):
     if work == "/":
         return f"📅 {title}({month}/{day})\n👉 휴무 😎"
@@ -57,16 +57,12 @@ def make_msg(month, day, work, title):
 # 🔔 내일 자동 알림
 def send_tomorrow_schedule():
     tomorrow = datetime.now() + timedelta(days=1)
-    month = tomorrow.month
-    day = tomorrow.day
-
-    work = get_work(month, day)
-    msg = make_msg(month, day, work, "내일")
-
+    work = get_work(tomorrow.month, tomorrow.day)
+    msg = make_msg(tomorrow.month, tomorrow.day, work, "내일")
     send_message(msg)
 
 # =========================
-# 🤖 텔레그램 명령어 부분
+# 🤖 텔레그램 명령어
 # =========================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -89,21 +85,7 @@ async def tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg)
 
 # =========================
-# 🚀 봇 실행
-# =========================
-
-def run_bot():
-    app = ApplicationBuilder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("today", today))
-    app.add_handler(CommandHandler("tomorrow", tomorrow))
-
-    print("봇 실행 중...")
-    app.run_polling()
-
-# =========================
-# ⏰ 자동 스케줄 실행
+# ⏰ 스케줄러 (백그라운드)
 # =========================
 
 def run_scheduler():
@@ -114,6 +96,19 @@ def run_scheduler():
         schedule.run_pending()
         time.sleep(1)
 
-# 👉 동시에 실행 (중요)
-threading.Thread(target=run_bot).start()
-threading.Thread(target=run_scheduler).start()
+# 👉 스케줄러 먼저 실행 (백그라운드)
+threading.Thread(target=run_scheduler, daemon=True).start()
+
+# =========================
+# 🚀 봇 실행 (메인)
+# =========================
+
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("today", today))
+app.add_handler(CommandHandler("tomorrow", tomorrow))
+
+print("봇 실행 중...")
+
+app.run_polling()
