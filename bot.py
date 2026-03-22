@@ -91,7 +91,7 @@ async def tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def run_scheduler():
     send_message("✅ 봇 정상 작동 확인!")
 
-schedule.every().day.at("12:00").do(send_tomorrow_schedule)
+schedule.every().day.at("12:30").do(send_tomorrow_schedule)
 
     while True:
         schedule.run_pending()
