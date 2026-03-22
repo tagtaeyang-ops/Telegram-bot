@@ -92,7 +92,7 @@ def run_scheduler():
     send_message("✅ 봇 정상 작동 확인!")
 
     # 🔥 한국 21시 = UTC 12시
-    schedule.every().day.at("12:00").do(send_tomorrow_schedule)
+    schedule.every().day.at("12:35").do(send_tomorrow_schedule)
 
     while True:
         schedule.run_pending()
