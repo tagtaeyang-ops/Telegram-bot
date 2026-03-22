@@ -25,8 +25,8 @@ async def tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 app = ApplicationBuilder().token(TOKEN).build()
 
-app.add_handler(CommandHandler("오늘", today))
-app.add_handler(CommandHandler("내일", tomorrow))
+app.add_handler(CommandHandler("today", today))
+app.add_handler(CommandHandler("tomorrow", tomorrow))
 
 print("봇 실행 중...")
 
